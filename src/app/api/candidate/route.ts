@@ -1,9 +1,7 @@
-// app/api/candidates/route.ts
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-// ✅ GET /api/candidates (list kandidat by HRD)
 export async function GET() {
   const { userId } = await auth();
   if (!userId) {

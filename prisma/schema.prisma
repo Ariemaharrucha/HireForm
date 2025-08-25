@@ -36,12 +36,16 @@ model Form {
 }
 
 model Candidate {
-  id        String   @id @default(cuid())
-  form      Form     @relation(fields: [formId], references: [id])
-  formId    String
-  name      String
-  email     String
-  phone     String?
-  resumeUrl String?
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  resumeUrl  String
+  resumeText String?
+  aiSummary  String?
+  aiScore    Int?
+  status     String   @default("processing")
+  formId     String
+  form       Form     @relation(fields: [formId], references: [id])
+  createdAt  DateTime @default(now())
 }
+
