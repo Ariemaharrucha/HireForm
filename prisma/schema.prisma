@@ -29,6 +29,7 @@ model Form {
   title       String
   description String?
   criteria    Json
+  slug        String      @unique
   candidates  Candidate[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
