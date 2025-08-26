@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { runScreening } from "@/lib/screening";
 
 export async function POST(req: Request, { params }: { params: { slug: string } }) {
   try {
@@ -38,6 +39,11 @@ export async function POST(req: Request, { params }: { params: { slug: string } 
         resumeUrl,
       },
     });
+
+    // 🔥 Fire-and-forget screening (tidak menunggu response)
+    runScreening(candidate.id, resumeUrl).catch((err) =>
+      console.error("Screening job failed:", err)
+    );
 
     return NextResponse.json(candidate, { status: 201 });
   } catch (error) {
