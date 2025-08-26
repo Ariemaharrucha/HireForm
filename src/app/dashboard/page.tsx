@@ -1,6 +1,7 @@
 "use client";
-import { UserButton } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
+import Link from "next/link";
 
 export default function DashboardPage() {
   useEffect(() => {
@@ -30,9 +31,14 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="p-6 flex items-center justify-between">
-      <div>Welcome to your Dashboard 🎉</div>
-      <UserButton />
+    <div>
+      <h1>Dashboard</h1>
+      <div className="flex flex-col gap-4 p-4 border rounded">
+        <h2>Create Form</h2>
+        <Button>
+          <Link href="/dashboard/forms/new">New Form</Link>
+        </Button>
+      </div>
     </div>
   );
 }
