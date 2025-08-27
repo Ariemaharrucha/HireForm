@@ -31,8 +31,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div>
-      <h1>Dashboard</h1>
+    <div className="container mx-auto p-4">
       <div className="flex flex-col gap-4 p-4 border rounded">
         <h2>Create Form</h2>
         <Button>

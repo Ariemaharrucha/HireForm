@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Description, Title } from "@radix-ui/react-dialog";
 
 export default function NewFormPage() {
   const router = useRouter();
@@ -52,7 +51,7 @@ export default function NewFormPage() {
   };
 
   return ( 
-    <div className="container mx-auto py-8">
+    <div className="container w-2/3 mx-auto py-8">
       <Card>
         <CardHeader>
           <CardTitle>Create New Form</CardTitle>

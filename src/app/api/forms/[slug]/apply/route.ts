@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { runScreening } from "@/lib/screening";
 
-export async function POST(req: Request, { params }: { params: { slug: string } }) {
+export async function POST(req: Request, {  params }: { params: Promise<{ slug: string }> }) {
   try {
+    const {slug} = await params;
     const body = await req.json();
     const { name, email, resumeUrl } = body;
 
@@ -15,7 +16,7 @@ export async function POST(req: Request, { params }: { params: { slug: string } 
     }
 
     const form = await prisma.form.findUnique({
-      where: { slug: params.slug },
+      where: { slug: slug },
     });
     if (!form) {
       return NextResponse.json({ error: "Form not found" }, { status: 404 });
