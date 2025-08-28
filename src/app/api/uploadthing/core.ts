@@ -6,7 +6,7 @@ export const ourFileRouter = {
     resumeUploader: f({
         pdf: { maxFileSize: "4MB", maxFileCount: 1 },
       }).onUploadComplete(async ({ file }) => {
-        console.log(file)
+        // console.log(file)
         return { url: file.ufsUrl }; 
       }),
 } satisfies FileRouter;
