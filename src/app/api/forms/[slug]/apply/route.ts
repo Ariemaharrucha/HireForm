@@ -6,7 +6,7 @@ export async function POST(req: Request, {  params }: { params: Promise<{ slug: 
   try {
     const {slug} = await params;
     const body = await req.json();
-    const { name, email, resumeUrl } = body;
+    const { name, email, resumeUrl, criteria } = body;
 
     if (!name || !email) {
       return NextResponse.json(
@@ -42,7 +42,7 @@ export async function POST(req: Request, {  params }: { params: Promise<{ slug: 
     });
 
     // 🔥 Fire-and-forget screening (tidak menunggu response)
-    runScreening(candidate.id, resumeUrl).catch((err) =>
+    runScreening(candidate.id, resumeUrl, criteria).catch((err) =>
       console.error("Screening job failed:", err)
     );
 

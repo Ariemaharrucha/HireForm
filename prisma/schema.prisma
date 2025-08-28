@@ -43,6 +43,7 @@ model Candidate {
   resumeText String?
   aiSummary  String?
   aiScore    Int?
+  aiCriteriaAnalysis String?
   status     String   @default("processing")
   formId     String
   form       Form     @relation(fields: [formId], references: [id])

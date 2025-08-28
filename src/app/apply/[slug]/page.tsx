@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,8 +17,25 @@ export default function ApplyPage() {
     email: "",
     resumeFile: "",
   });
+  const [formDetail, setFormDetail] = useState({
+    title: "",
+    criteria: "",
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    const fetchFormDetail = async () => {
+      const response = await fetch(`/api/forms/${slug}`);
+      const data = await response.json();
+      setFormDetail((prev) => ({
+        ...prev,
+        title: data.data.title,
+        criteria: data.data.criteria,
+      }));
+    };
+    fetchFormDetail();
+  }, [slug]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -59,6 +76,8 @@ export default function ApplyPage() {
       }
 
       toast.success("Your application has been submitted successfully!");
+      sessionStorage.setItem("applied", "true");
+      sessionStorage.setItem("appliedSlug", slug as string);
       router.push("/thank-you");
     } catch (error) {
       console.error("Submission error:", error);
@@ -72,9 +91,12 @@ export default function ApplyPage() {
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Job Application</h1>
+          <h1 className="text-2xl font-bold text-gray-900">HireForm</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Fill out the form to apply for this position.
+            {formDetail.title}
+          </p>
+          <p className="mt-2 text-sm text-gray-600">
+            {formDetail.criteria}
           </p>
         </div>
 
@@ -161,7 +183,7 @@ export default function ApplyPage() {
               className="w-full"
               disabled={isLoading || isUploading}
             >
-              {isLoading ? "Submitting..." : "Submit Application"}
+              {isLoading ? "Submitting..." : "Submit"}
             </Button>
           </div>
         </form>
