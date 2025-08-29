@@ -1,173 +1,167 @@
-"use client"
+"use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner"
-
+import { toast } from "sonner";
+import { useUploadThing } from "@/utils/uploadthing"; 
+import { FileText, X, Loader2 } from "lucide-react"; 
 export default function ApplyPage() {
   const { slug } = useParams();
   const router = useRouter();
-  
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    resumeFile: null as File | null,
-  });
-  const [isLoading, setIsLoading] = useState(false);
+
+  const [formData, setFormData] = useState({ name: "", email: "" });
+  const [files, setFiles] = useState<File[]>([]);
+
+  const [formDetail, setFormDetail] = useState({ title: "", criteria: "" });
+  const [isFetchingDetail, setIsFetchingDetail] = useState(true);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { startUpload } = useUploadThing("resumeUploader"); 
+
+  useEffect(() => {
+    const fetchFormDetail = async () => {
+      try {
+        setIsFetchingDetail(true);
+        const response = await fetch(`/api/forms/${slug}`);
+        const data = await response.json();
+        setFormDetail({
+          title: data.data.title,
+          criteria: data.data.criteria,
+        });
+      } catch (error) {
+        toast.error("Failed to load form details.");
+      } finally {
+        setIsFetchingDetail(false);
+      }
+    };
+    fetchFormDetail();
+  }, [slug]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, files } = e.target;
-    
-    if (name === 'resumeFile' && files) {
-      setFormData(prev => ({
-        ...prev,
-        [name]: files[0]
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
-  const uploadResume = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-    const response = await fetch(`/api/uploadthing`, {
-      method: 'POST',
-      body: formData,
-    });
-    
-    // if (!response.ok) {
-    //   throw new Error('Failed to upload resume');
-    // }
-    
-    const data = await response.json();
-    // console.log(data)
-    return data.url;
-    } catch (error) {
-      console.error('Upload error:', error);
-      throw new Error('Failed to upload resume');
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFiles(Array.from(e.target.files));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // Validasi input
     if (!formData.name || !formData.email) {
-      toast("Error", {description: "Name and email are required"});
+      toast.error("Name and email are required.");
       return;
     }
-    
-    if (!formData.resumeFile) {
-      toast("Error", {description: "Please upload your resume"});
+    if (files.length === 0) {
+      toast.error("Please select your resume to upload.");
       return;
     }
-    
+
+    setIsSubmitting(true);
     try {
-      setIsLoading(true);
+      const uploadResponse = await startUpload(files);
+
+      if (!uploadResponse || !uploadResponse[0].ufsUrl) {
+        throw new Error("Resume upload failed. Please try again.");
+      }
       
-      // Upload resume and get URL
-      const resumeUrl = await uploadResume(formData.resumeFile);
-      
-      // Submit application
-      const response = await fetch(`/api/forms/${slug}/apply`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const resumeUrl = uploadResponse[0].url;
+
+
+      const apiResponse = await fetch(`/api/forms/${slug}/apply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          resumeUrl,
+          resumeUrl: resumeUrl,
         }),
       });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to submit application');
+
+      if (!apiResponse.ok) {
+        const error = await apiResponse.json();
+        throw new Error(error.error || "Failed to submit application.");
       }
-      
-      toast("Success!", {description: "Your application has been submitted successfully!"});
-      
-      // Redirect to thank you page or home
-      // router.push('/thank-you');
-      
+
+      toast.success("Your application has been submitted successfully!");
+      sessionStorage.setItem("applied", "true");
+      sessionStorage.setItem("appliedSlug", slug as string);
+      router.push("/thank-you");
+
     } catch (error) {
-      console.error('Submission error:', error);
-      toast("Error", {description: error instanceof Error ? error.message : 'Failed to submit application'});
+      console.error("Submission error:", error);
+      toast.error(error instanceof Error ? error.message : "An unknown error occurred.");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
+  if (isFetchingDetail) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+         <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl p-8">
+      <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Job Application</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Please fill out the form below to apply for this position.
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">HireForm</h1>
+          <p className="mt-2 text-lg font-semibold text-gray-800">{formDetail.title}</p>
+          <p className="mt-1 text-sm text-gray-600">{formDetail.criteria}</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name & Email Inputs */}
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
             <Input id="name" name="name" type="text" value={formData.name} onChange={handleChange} placeholder="John Doe" required />
           </div>
-          
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Email Address</Label>
             <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="john@example.com" required />
           </div>
           
+          {/* Resume Upload - Improved UX */}
           <div className="space-y-2">
-            <Label htmlFor="resume">Resume (PDF)</Label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-              <div className="space-y-1 text-center">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  stroke="currentColor"
-                  fill="none"
-                  viewBox="0 0 48 48"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <div className="flex text-sm text-gray-600">
-                  <label htmlFor="resume" className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none">
-                    <span>Upload a file</span>
-                    <input id="resume" name="resumeFile" type="file" className="sr-only" onChange={handleChange} accept=".pdf" required />
-                  </label>
-                  <p className="pl-1">or drag and drop</p>
+            <Label htmlFor="resume">Resume (PDF, max 4MB)</Label>
+            {files.length > 0 ? (
+              <div className="flex items-center justify-between p-3 border border-gray-300 rounded-md">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-gray-500" />
+                  <span className="text-sm text-gray-700 truncate">{files[0].name}</span>
                 </div>
-                <p className="text-xs text-gray-500">
-                  PDF max 4 MB
-                </p>
-                {formData.resumeFile && (
-                  <p className="text-sm text-gray-500 mt-2">
-                    Selected: {formData.resumeFile.name}
-                  </p>
-                )}
+                <Button variant="ghost" size="icon" onClick={() => setFiles([])} disabled={isSubmitting}>
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
-            </div>
+            ) : (
+              <label className="flex items-center justify-center w-full px-4 py-3 text-sm text-gray-700 bg-gray-50 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:bg-gray-100">
+                <span>Click to choose a file</span>
+                <Input id="resume" type="file" className="hidden" onChange={handleFileChange} accept=".pdf" disabled={isSubmitting} />
+              </label>
+            )}
           </div>
-          
+
+          {/* Submit Button */}
           <div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Submitting...' : 'Submit Application'}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : "Submit Application"}
             </Button>
           </div>
         </form>
