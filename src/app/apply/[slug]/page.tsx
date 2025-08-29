@@ -6,184 +6,162 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { UploadButton } from "@/app/utils/uploadthing";
-
+import { useUploadThing } from "@/utils/uploadthing"; 
+import { FileText, X, Loader2 } from "lucide-react"; 
 export default function ApplyPage() {
   const { slug } = useParams();
   const router = useRouter();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    resumeFile: "",
-  });
-  const [formDetail, setFormDetail] = useState({
-    title: "",
-    criteria: "",
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [formData, setFormData] = useState({ name: "", email: "" });
+  const [files, setFiles] = useState<File[]>([]);
+
+  const [formDetail, setFormDetail] = useState({ title: "", criteria: "" });
+  const [isFetchingDetail, setIsFetchingDetail] = useState(true);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { startUpload } = useUploadThing("resumeUploader"); 
 
   useEffect(() => {
     const fetchFormDetail = async () => {
-      const response = await fetch(`/api/forms/${slug}`);
-      const data = await response.json();
-      setFormDetail((prev) => ({
-        ...prev,
-        title: data.data.title,
-        criteria: data.data.criteria,
-      }));
+      try {
+        setIsFetchingDetail(true);
+        const response = await fetch(`/api/forms/${slug}`);
+        const data = await response.json();
+        setFormDetail({
+          title: data.data.title,
+          criteria: data.data.criteria,
+        });
+      } catch (error) {
+        toast.error("Failed to load form details.");
+      } finally {
+        setIsFetchingDetail(false);
+      }
     };
     fetchFormDetail();
   }, [slug]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFiles(Array.from(e.target.files));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validasi input
     if (!formData.name || !formData.email) {
-      toast.error("Name and email are required");
+      toast.error("Name and email are required.");
       return;
     }
-    if (!formData.resumeFile) {
-      toast.error("Please upload your resume");
+    if (files.length === 0) {
+      toast.error("Please select your resume to upload.");
       return;
     }
 
+    setIsSubmitting(true);
     try {
-      setIsLoading(true);
+      const uploadResponse = await startUpload(files);
 
-      const response = await fetch(`/api/forms/${slug}/apply`, {
+      if (!uploadResponse || !uploadResponse[0].ufsUrl) {
+        throw new Error("Resume upload failed. Please try again.");
+      }
+      
+      const resumeUrl = uploadResponse[0].url;
+
+
+      const apiResponse = await fetch(`/api/forms/${slug}/apply`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          resumeUrl: formData.resumeFile,
+          resumeUrl: resumeUrl,
         }),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to submit application");
+      if (!apiResponse.ok) {
+        const error = await apiResponse.json();
+        throw new Error(error.error || "Failed to submit application.");
       }
 
       toast.success("Your application has been submitted successfully!");
       sessionStorage.setItem("applied", "true");
       sessionStorage.setItem("appliedSlug", slug as string);
       router.push("/thank-you");
+
     } catch (error) {
       console.error("Submission error:", error);
-      toast.error(error instanceof Error ? error.message : "Submission failed");
+      toast.error(error instanceof Error ? error.message : "An unknown error occurred.");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
+
+  if (isFetchingDetail) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+         <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden p-8">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900">HireForm</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            {formDetail.title}
-          </p>
-          <p className="mt-2 text-sm text-gray-600">
-            {formDetail.criteria}
-          </p>
+          <p className="mt-2 text-lg font-semibold text-gray-800">{formDetail.title}</p>
+          <p className="mt-1 text-sm text-gray-600">{formDetail.criteria}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Name */}
+          {/* Name & Email Inputs */}
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
-            <Input
-              id="name"
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="John Doe"
-              required
-              aria-required="true"
-            />
+            <Input id="name" name="name" type="text" value={formData.name} onChange={handleChange} placeholder="John Doe" required />
           </div>
-
-          {/* Email */}
           <div className="space-y-2">
             <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="john@example.com"
-              required
-              aria-required="true"
-            />
+            <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="john@example.com" required />
           </div>
-
-          {/* Resume Upload */}
+          
+          {/* Resume Upload - Improved UX */}
           <div className="space-y-2">
-            <Label htmlFor="resume">Resume (PDF)</Label>
-            <UploadButton
-              appearance={{
-                button:
-                  "ut-ready:bg-blue-600 ut-ready:hover:bg-blue-700 ut-uploading:cursor-not-allowed rounded-md text-white px-4 py-2",
-                container:
-                  "flex flex-col items-start gap-2 p-2 border border-gray-300 rounded-md",
-                allowedContent:
-                  "text-sm text-gray-500 mt-1",
-              }}
-              endpoint="resumeUploader"
-              onUploadProgress={() => setIsUploading(true)}
-              onClientUploadComplete={(res) => {
-                setFormData((prev) => ({
-                  ...prev,
-                  resumeFile: res[0].ufsUrl,
-                }));
-                setIsUploading(false);
-                toast.success("Resume uploaded successfully!");
-              }}
-              onUploadError={() => {
-                setIsUploading(false);
-                toast.error("Failed to upload resume. Try again.");
-              }}
-            />
-            {isUploading && (
-              <p className="text-sm text-gray-500">Uploading resume...</p>
-            )}
-            {formData.resumeFile && (
-              <p className="text-sm text-green-600">
-                ✅ Resume uploaded:{" "}
-                <a
-                  href={formData.resumeFile}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline"
-                >
-                  View file
-                </a>
-              </p>
+            <Label htmlFor="resume">Resume (PDF, max 4MB)</Label>
+            {files.length > 0 ? (
+              <div className="flex items-center justify-between p-3 border border-gray-300 rounded-md">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-gray-500" />
+                  <span className="text-sm text-gray-700 truncate">{files[0].name}</span>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setFiles([])} disabled={isSubmitting}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <label className="flex items-center justify-center w-full px-4 py-3 text-sm text-gray-700 bg-gray-50 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:bg-gray-100">
+                <span>Click to choose a file</span>
+                <Input id="resume" type="file" className="hidden" onChange={handleFileChange} accept=".pdf" disabled={isSubmitting} />
+              </label>
             )}
           </div>
 
           {/* Submit Button */}
           <div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading || isUploading}
-            >
-              {isLoading ? "Submitting..." : "Submit"}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : "Submit Application"}
             </Button>
           </div>
         </form>
