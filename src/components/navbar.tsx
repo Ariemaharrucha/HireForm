@@ -18,7 +18,7 @@ export function Navbar() {
         <Link href="/dashboard" className="bg-purple-600 text-white rounded px-4 py-2 cursor-pointer hover:bg-purple-700">
           Dashboard
         </Link>
-        <UserButton afterSignOutUrl="/" />
+        <UserButton />
       </SignedIn>
       </header>
   );
