@@ -4,13 +4,13 @@ import type React from "react"
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bell, Home, Workflow } from "lucide-react"
+import { Bell, Folders, Home, Workflow } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { UserButton } from "@clerk/nextjs"
 import { useEffect } from "react"
 
 const navigation = [
-  { name: "Forms", href: "/dashboard/forms", icon: Home },
+  { name: "Forms", href: "/dashboard/forms", icon: Folders },
 ]
 
 interface DashboardLayoutProps {
