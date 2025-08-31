@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { createForm } from "@/lib/action/forms";
 
 export default function NewFormPage() {
   const router = useRouter();
@@ -22,26 +23,11 @@ export default function NewFormPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/forms", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: formData.title,
-          description: formData.description,
-          criteria: formData.criteria,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Something went wrong");
+      const response = await createForm(formData);
+      if (!response) {
+        throw new Error("Failed to create form");
       }
-
-      const data = await response.json();
-      // router.push(`/dashboard/forms/${data.id}`);
-      console.log("success", data);
+      router.push(`/dashboard/forms/${response.id}`);
     } catch (error) {
       console.error("Error creating form:", error);
       alert(error instanceof Error ? error.message : "Failed to create form");

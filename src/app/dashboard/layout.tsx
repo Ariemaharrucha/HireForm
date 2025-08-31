@@ -19,6 +19,8 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
+  const segments = pathname.split("/").filter(Boolean)
+  const currentPage = segments[segments.length - 1]
 
   useEffect(() => {
     const syncUser = async () => {
@@ -58,7 +60,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
           <div className="text-sm text-gray-500">
             <span>Dashboard</span> <span className="mx-1">/</span>
-            <span className="capitalize">{pathname === "/dashboard/forms" ? "Forms" : pathname.slice(1)}</span>
+            <span className="capitalize">{currentPage}</span>
           </div>
         </div>
 

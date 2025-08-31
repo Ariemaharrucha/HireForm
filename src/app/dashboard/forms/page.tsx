@@ -58,7 +58,7 @@ export default function FormsPage() {
             </DropdownMenuContent>
           </DropdownMenu>
           <Link href="/dashboard/forms/new">
-            <Button className="bg-purple-600 hover:bg-purple-700 gap-2">
+            <Button className="bg-purple-600 hover:bg-purple-700 gap-2 cursor-pointer">
               <Plus className="w-4 h-4" />
               New Form
             </Button>
