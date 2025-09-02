@@ -36,7 +36,9 @@ export default function FormsList({ initialForms }: { initialForms: Form[] }) {
 
       {/* Grid untuk menampilkan semua 'forms' ada di sini */}
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 bg-white p-4 border border-gray-300 rounded-2xl ">
-      {forms.map((form) => (
+      {forms.length === 0 ? (
+        <p className="text-center">No forms found.</p>
+      ) : forms.map((form) => (
           <Link key={form.id} href={`/dashboard/forms/${form.id}`}>
           <div className="rounded-xl border shadow-sm hover:shadow-md transition bg-white p-4 flex flex-col justify-between cursor-pointer">
             <div className="space-y-4">
