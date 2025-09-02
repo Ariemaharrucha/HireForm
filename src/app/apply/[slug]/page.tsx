@@ -6,8 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { useUploadThing } from "@/utils/uploadthing"; 
-import { FileText, X, Loader2 } from "lucide-react"; 
+import { useUploadThing } from "@/utils/uploadthing";
+import { FileText, X, Loader2 } from "lucide-react";
+import { applyCandidate, checkCandidate } from "@/lib/action/application";
+import { getFormBySlug } from "@/lib/action/forms";
+
 export default function ApplyPage() {
   const { slug } = useParams();
   const router = useRouter();
@@ -20,17 +23,16 @@ export default function ApplyPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { startUpload } = useUploadThing("resumeUploader"); 
+  const { startUpload } = useUploadThing("resumeUploader");
 
   useEffect(() => {
     const fetchFormDetail = async () => {
       try {
         setIsFetchingDetail(true);
-        const response = await fetch(`/api/forms/${slug}`);
-        const data = await response.json();
+        const response = await getFormBySlug(slug as string);
         setFormDetail({
-          title: data.data.title,
-          criteria: data.data.criteria,
+          title: response.title,
+          criteria: response.criteria,
         });
       } catch (error) {
         toast.error("Failed to load form details.");
@@ -45,7 +47,7 @@ export default function ApplyPage() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setFiles(Array.from(e.target.files));
@@ -54,8 +56,7 @@ export default function ApplyPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validasi input
+  
     if (!formData.name || !formData.email) {
       toast.error("Name and email are required.");
       return;
@@ -64,38 +65,40 @@ export default function ApplyPage() {
       toast.error("Please select your resume to upload.");
       return;
     }
-
+  
     setIsSubmitting(true);
     try {
+      // 1️⃣ Cek apakah email sudah pernah apply
+      const check = await checkCandidate(slug as string, formData.email);
+      if (check.exists) {
+        throw new Error("You have already applied to this form.");
+      }
+  
+      // 2️⃣ Upload file resume
       const uploadResponse = await startUpload(files);
-
       if (!uploadResponse || !uploadResponse[0].ufsUrl) {
         throw new Error("Resume upload failed. Please try again.");
       }
-      
-      const resumeUrl = uploadResponse[0].url;
-
-
-      const apiResponse = await fetch(`/api/forms/${slug}/apply`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          resumeUrl: resumeUrl,
-        }),
+      const resumeUrl = uploadResponse[0].ufsUrl;
+  
+      // 3️⃣ Apply candidate
+      const result = await applyCandidate({
+        slug: slug as string,
+        name: formData.name,
+        email: formData.email,
+        resumeUrl,
+        criteria: formDetail.criteria,
       });
-
-      if (!apiResponse.ok) {
-        const error = await apiResponse.json();
-        throw new Error(error.error || "Failed to submit application.");
+  
+      if (!result.success) {
+        throw new Error(result.error || "Failed to submit application.");
       }
-
+  
       toast.success("Your application has been submitted successfully!");
       sessionStorage.setItem("applied", "true");
       sessionStorage.setItem("appliedSlug", slug as string);
       router.push("/thank-you");
-
+  
     } catch (error) {
       console.error("Submission error:", error);
       toast.error(error instanceof Error ? error.message : "An unknown error occurred.");
@@ -107,7 +110,7 @@ export default function ApplyPage() {
   if (isFetchingDetail) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-         <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
       </div>
     );
   }
@@ -122,7 +125,6 @@ export default function ApplyPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Name & Email Inputs */}
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
             <Input id="name" name="name" type="text" value={formData.name} onChange={handleChange} placeholder="John Doe" required />
@@ -131,8 +133,7 @@ export default function ApplyPage() {
             <Label htmlFor="email">Email Address</Label>
             <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="john@example.com" required />
           </div>
-          
-          {/* Resume Upload - Improved UX */}
+
           <div className="space-y-2">
             <Label htmlFor="resume">Resume (PDF, max 4MB)</Label>
             {files.length > 0 ? (
@@ -153,7 +154,6 @@ export default function ApplyPage() {
             )}
           </div>
 
-          {/* Submit Button */}
           <div>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? (
