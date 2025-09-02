@@ -1,52 +1,19 @@
-"use client"
-
-import type React from "react"
-
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Bell, Folders, Home, Workflow } from "lucide-react"
+import { Bell, Workflow } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { UserButton } from "@clerk/nextjs"
-import { useEffect } from "react"
-
-const navigation = [
-  { name: "Forms", href: "/dashboard/forms", icon: Folders },
-]
+import { getCurrentUser } from "@/lib/action/users"
+import Sidebar from "@/components/dashboard/sidebar"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
 }
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const pathname = usePathname()
-  const segments = pathname.split("/").filter(Boolean)
-  const currentPage = segments[segments.length - 1]
+export default async function DashboardLayout({ children }: DashboardLayoutProps) {
+  const user = await getCurrentUser();
 
-  useEffect(() => {
-    const syncUser = async () => {
-      try {
-        const response = await fetch("/api/users", {
-          method: "POST",
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const data = await response.json();
-        
-        if (!response.ok) {
-          console.error('Error syncing user:', data.error || 'Unknown error');
-          return;
-        }
-
-        // console.log('User synced successfully:', data);
-      } catch (error) {
-        console.error('Failed to sync user:', error);
-      }
-    };
-    
-    syncUser();
-  }, []);
+  if (!user) {
+    return <div className="p-6">Unauthorized</div>;
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -57,10 +24,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
               <Workflow className="w-4 h-4 text-white" />
             </div>
-          </div>
-          <div className="text-sm text-gray-500">
-            <span>Dashboard</span> <span className="mx-1">/</span>
-            <span className="capitalize">{currentPage}</span>
           </div>
         </div>
 
@@ -74,28 +37,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </header>
 
       <div className="flex">
-        {/* Sidebar */}
-        <aside className="w-60 border-r border-gray-200 bg-white h-[calc(100vh-4rem)] overflow-y-auto">
-          <div className="p-4">
-            <nav className="space-y-1">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`flex items-center w-full justify-start px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      isActive ? "bg-purple-50 text-purple-700 hover:bg-purple-100" : "text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    <item.icon className="w-4 h-4 mr-3" />
-                    {item.name}
-                  </Link>
-                )
-              })}
-            </nav>
-          </div>
-        </aside>
+        <Sidebar />
 
         {/* Main Content */}
         <main className="flex-1 p-8 bg-gray-50">{children}</main>
