@@ -1,12 +1,15 @@
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import { getFormById } from "@/lib/action/forms";
-import { SummaryDialog } from "@/components/dashboard/summary-dialog";
+import { SummaryDialog } from "@/components/dashboard/SummaryDialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { filterCandidate } from "@/lib/action/candidate";
+import { deleteCandidate, filterCandidate, updateCandidateStatus } from "@/lib/action/candidate";
 import { redirect } from "next/navigation";
 import { CandidateFilterDialog } from "@/components/dashboard/candidateFilterDialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { MoreVertical } from "lucide-react";
+import { CandidateStatusAction } from "@/components/dashboard/CandidateStatusAction";
 
 export default async function FormPageDetails({params, searchParams}: {
   params: Promise<{ id: string }>;
@@ -52,6 +55,7 @@ export default async function FormPageDetails({params, searchParams}: {
                 <TableHead>Summary</TableHead>
                 <TableHead className="text-center">AI Score</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -81,7 +85,18 @@ export default async function FormPageDetails({params, searchParams}: {
                       )}
                     </TableCell>
                     <TableCell className="text-center">
-                      {candidate.status}
+                      {candidate.status === "shortlisted" && (
+                        <Badge className="bg-green-500 text-white">Shortlisted</Badge>
+                      )}
+                      {candidate.status === "rejected" && (
+                        <Badge className="bg-red-500 text-white">Rejected</Badge>
+                      )}
+                      {candidate.status === "pending" && (
+                        <Badge className="bg-yellow-500 text-white">Pending</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <CandidateStatusAction candidate={{ id: candidate.id, status: candidate.status }} />
                     </TableCell>
                   </TableRow>
                 ))

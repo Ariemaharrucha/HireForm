@@ -4,6 +4,7 @@ import { UserButton } from "@clerk/nextjs"
 import { getCurrentUser } from "@/lib/action/users"
 import Sidebar from "@/components/dashboard/sidebar"
 
+
 interface DashboardLayoutProps {
   children: React.ReactNode
 }
