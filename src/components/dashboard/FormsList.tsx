@@ -6,15 +6,27 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ChevronDown, MoreVertical } from "lucide-react";
 import { Button } from "../ui/button";
 import { Form } from "@prisma/client";
+import { toast } from "sonner";
 
 export default function FormsList({ initialForms }: { initialForms: Form[] }) {
   const [selectedPeriod, setSelectedPeriod] = useState("All time");
   const [forms] = useState(initialForms);
+
+  const handleCopyLink = async (slug: string) => {
+    const url = `${window.location.origin}/apply/${slug}`;
+    await navigator.clipboard.writeText(url);
+
+    toast.success("Link copied!", {
+      description: "Form link has been copied to clipboard.",
+      duration: 2000,
+    });
+  };
+
   return (
     <div>
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mt-4">
         {/* DropdownMenu dan logikanya ada di sini */}
-        <DropdownMenu>
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="gap-2 bg-transparent">
                 {selectedPeriod} <ChevronDown className="w-4 h-4" />
@@ -57,8 +69,12 @@ export default function FormsList({ initialForms }: { initialForms: Form[] }) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                  <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopyLink(form.slug);
+                    }} className="cursor-pointer">Copy Link</DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">Edit</DropdownMenuItem>
+                  <DropdownMenuItem className="text-red-600 cursor-pointer">Delete</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               </div>

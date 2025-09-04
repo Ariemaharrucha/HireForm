@@ -5,19 +5,17 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import { updateCandidateStatus } from "@/lib/action/candidate";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export function CandidateStatusAction({ candidate }: { candidate: { id: string; status: string } }) {
   let [isPending, startTransition] = useTransition();
-  const [optimisticStatus, setOptimisticStatus] = useState(candidate.status);
 
   const router = useRouter();
 
   const handleUpdate = (status: "pending" | "shortlisted" | "rejected") => {
     startTransition(async () => {
       await updateCandidateStatus(candidate.id, status);
-      router.refresh(); // 🔥 ini yg bikin tabel re-render
+      router.refresh(); 
     });
   };
 

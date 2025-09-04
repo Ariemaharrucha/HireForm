@@ -4,11 +4,9 @@ import { SummaryDialog } from "@/components/dashboard/SummaryDialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { deleteCandidate, filterCandidate, updateCandidateStatus } from "@/lib/action/candidate";
+import { deleteCandidate, filterCandidate } from "@/lib/action/candidate";
 import { redirect } from "next/navigation";
-import { CandidateFilterDialog } from "@/components/dashboard/candidateFilterDialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreVertical } from "lucide-react";
+import { CandidateFilterDialog } from "@/components/dashboard/CandidateFilterDialog";
 import { CandidateStatusAction } from "@/components/dashboard/CandidateStatusAction";
 
 export default async function FormPageDetails({params, searchParams}: {
