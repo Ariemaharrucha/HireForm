@@ -1,7 +1,7 @@
 "use server";
 import prisma from "@/lib/prisma";
 
-export async function filterCandidate(formId: string, minScore?: number, status?: string) {
+export async function filterCandidate(formId: string, minScore?: number, status?: string, order?: "asc" | "desc") {
   try {
     const candidates = await prisma.candidate.findMany({
       where: {
@@ -9,7 +9,9 @@ export async function filterCandidate(formId: string, minScore?: number, status?
         ...(minScore !== undefined ? { aiScore: { gte: minScore } } : {}),
         ...(status ? { status } : {}),
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: order
+        ? { aiScore: order }
+        : { createdAt: "desc" },
     });
 
     return candidates;

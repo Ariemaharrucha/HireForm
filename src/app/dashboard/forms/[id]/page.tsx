@@ -8,25 +8,24 @@ import { deleteCandidate, filterCandidate } from "@/lib/action/candidate";
 import { redirect } from "next/navigation";
 import { CandidateFilterDialog } from "@/components/dashboard/CandidateFilterDialog";
 import { CandidateStatusAction } from "@/components/dashboard/CandidateStatusAction";
+import ExportCandidateCsv from "@/components/dashboard/ExportCandidateCsv";
 
 export default async function FormPageDetails({params, searchParams}: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ score?: string; status?: string }>;
+  searchParams: { score?: string; status?: string; order?: "asc" | "desc" };
 }) {
   const { id } = await params;
-  const { score, status } = await searchParams;
+  const { score, status, order } = await searchParams;
 
   const form = await getFormById(id);
 
-  if (!form) {
-    redirect("/dashboard");
-  }
+  if (!form) {redirect("/dashboard");}
 
   const minScore = score ? parseInt(score) : undefined;
   const candidateStatus = status && status !== "all" ? status : undefined;
 
 
-  const filteredCandidates = await filterCandidate(id, minScore, candidateStatus);
+  const filteredCandidates = await filterCandidate(id, minScore, candidateStatus, order);
 
   return (
     <div className="p-4 sm:p-6 md:p-8">
@@ -40,7 +39,10 @@ export default async function FormPageDetails({params, searchParams}: {
               Review all candidates who applied for this position.
             </CardDescription>
           </div>
-          <CandidateFilterDialog />
+          <div className="flex items-center gap-2">
+            <ExportCandidateCsv />
+            <CandidateFilterDialog />
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -51,6 +53,7 @@ export default async function FormPageDetails({params, searchParams}: {
                 <TableHead>Email</TableHead>
                 <TableHead>Resume</TableHead>
                 <TableHead>Summary</TableHead>
+                <TableHead>AI analysis</TableHead>
                 <TableHead className="text-center">AI Score</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
@@ -74,6 +77,9 @@ export default async function FormPageDetails({params, searchParams}: {
                     </TableCell>
                     <TableCell>
                       <SummaryDialog summary={candidate.aiSummary} />
+                    </TableCell>
+                    <TableCell>
+                      <SummaryDialog summary={candidate.aiCriteriaAnalysis} />
                     </TableCell>
                     <TableCell className="text-center">
                       {candidate.aiScore !== null ? (

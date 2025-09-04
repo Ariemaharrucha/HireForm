@@ -16,12 +16,14 @@ export function CandidateFilterDialog() {
 
   const [minScore, setMinScore] = useState(searchParams.get("score") || "");
   const [status, setStatus] = useState(searchParams.get("status") || "");
+  const [order, setOrder] = useState(searchParams.get("order") || "");
 
   const applyFilter = () => {
     const params = new URLSearchParams(searchParams.toString());
 
     if (minScore) { params.set("score", minScore); } else { params.delete("score"); }
     if (status) { params.set("status", status); } else { params.delete("status"); }
+    if (order) { params.set("order", order); } else { params.delete("order"); }
     router.push(`?${params.toString()}`);
   };
 
@@ -56,6 +58,18 @@ export function CandidateFilterDialog() {
                 <SelectItem value="shortlisted">Shortlisted</SelectItem>
                 <SelectItem value="rejected">Rejected</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Ai Score</Label>
+            <Select value={order} onValueChange={setOrder}>
+              <SelectTrigger>
+                <SelectValue placeholder="All status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="desc">Descending</SelectItem>
+                <SelectItem value="asc">Ascending</SelectItem>
               </SelectContent>
             </Select>
           </div>
