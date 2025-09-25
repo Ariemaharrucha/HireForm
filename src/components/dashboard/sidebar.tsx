@@ -8,7 +8,7 @@ const navigation = [
   { name: "Forms", href: "/dashboard/forms", icon: Folders },
 ]
 
-export default function Sidebar() {
+export function Sidebar() {
   const pathname = usePathname()
   const segments = pathname.split("/").filter(Boolean)
   const currentPage = segments[segments.length - 1]
