@@ -2,19 +2,31 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ChevronDown, MoreVertical } from "lucide-react";
 import { Button } from "../ui/button";
 import { Form } from "@prisma/client";
+import { toast } from "sonner";
 
 export default function FormsList({ initialForms }: { initialForms: Form[] }) {
   const [selectedPeriod, setSelectedPeriod] = useState("All time");
   const [forms] = useState(initialForms);
+
+  const handleCopyLink = async (slug: string) => {
+    const url = `${window.location.origin}/apply/${slug}`;
+    await navigator.clipboard.writeText(url);
+
+    toast.success("Link copied!", {
+      description: "Form link has been copied to clipboard.",
+      duration: 2000,
+    });
+  };
+
   return (
     <div>
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mt-4">
         {/* DropdownMenu dan logikanya ada di sini */}
-        <DropdownMenu>
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="gap-2 bg-transparent">
                 {selectedPeriod} <ChevronDown className="w-4 h-4" />
@@ -36,7 +48,9 @@ export default function FormsList({ initialForms }: { initialForms: Form[] }) {
 
       {/* Grid untuk menampilkan semua 'forms' ada di sini */}
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 bg-white p-4 border border-gray-300 rounded-2xl ">
-      {forms.map((form) => (
+      {forms.length === 0 ? (
+        <p className="text-center">No forms found.</p>
+      ) : forms.map((form) => (
           <Link key={form.id} href={`/dashboard/forms/${form.id}`}>
           <div className="rounded-xl border shadow-sm hover:shadow-md transition bg-white p-4 flex flex-col justify-between cursor-pointer">
             <div className="space-y-4">
@@ -55,8 +69,12 @@ export default function FormsList({ initialForms }: { initialForms: Form[] }) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                  <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopyLink(form.slug);
+                    }} className="cursor-pointer">Copy Link</DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">Edit</DropdownMenuItem>
+                  <DropdownMenuItem className="text-red-600 cursor-pointer">Delete</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               </div>

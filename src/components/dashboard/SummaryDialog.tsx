@@ -11,7 +11,7 @@ export function SummaryDialog({ summary }: { summary: string | null }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="cursor-pointer">View Summary</Button>
+        <Button variant="outline" size="sm" className="cursor-pointer">View</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[625px]">
         <DialogHeader>

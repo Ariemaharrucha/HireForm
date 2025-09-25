@@ -16,10 +16,10 @@ export default function Sidebar() {
   return (
     <aside className="w-60 border-r border-gray-200 bg-white h-[calc(100vh-4rem)] overflow-y-auto">
       <div className="p-4">
-        <div className="text-sm text-gray-500 mb-4">
+        {/* <div className="text-sm text-gray-500 mb-4">
           <span>Dashboard</span> <span className="mx-1">/</span>
           <span className="capitalize">{currentPage}</span>
-        </div>
+        </div> */}
         <nav className="space-y-1">
           {navigation.map((item) => {
             const isActive = pathname === item.href
