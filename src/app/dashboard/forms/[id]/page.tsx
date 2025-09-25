@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { deleteCandidate, filterCandidate } from "@/lib/action/candidate";
 import { redirect } from "next/navigation";
-import { CandidateFilterDialog } from "@/components/dashboard/CandidateFilterDialog";
+
 import { CandidateStatusAction } from "@/components/dashboard/CandidateStatusAction";
 import ExportCandidateCsv from "@/components/dashboard/ExportCandidateCsv";
+import { CandidateFilterDialog } from "@/components/dashboard/candidateFilterDialog";
 
 export default async function FormPageDetails({params, searchParams}: {
   params: Promise<{ id: string }>;
