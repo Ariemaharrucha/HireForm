@@ -4,7 +4,7 @@ import { SummaryDialog } from "@/components/dashboard/SummaryDialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { deleteCandidate, filterCandidate } from "@/lib/action/candidate";
+import { filterCandidate } from "@/lib/action/candidate";
 import { redirect } from "next/navigation";
 
 import { CandidateStatusAction } from "@/components/dashboard/CandidateStatusAction";

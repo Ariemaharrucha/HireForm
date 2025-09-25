@@ -8,7 +8,7 @@ import { updateCandidateStatus } from "@/lib/action/candidate";
 import { useRouter } from "next/navigation";
 
 export function CandidateStatusAction({ candidate }: { candidate: { id: string; status: string } }) {
-  let [isPending, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const router = useRouter();
 
