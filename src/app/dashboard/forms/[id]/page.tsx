@@ -1,50 +1,48 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import { getFormById } from "@/lib/action/forms";
-import { SummaryDialog } from "@/components/dashboard/summary-dialog";
+import { SummaryDialog } from "@/components/dashboard/SummaryDialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Link } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { deleteCandidate, filterCandidate } from "@/lib/action/candidate";
+import { redirect } from "next/navigation";
+import { CandidateFilterDialog } from "@/components/dashboard/CandidateFilterDialog";
+import { CandidateStatusAction } from "@/components/dashboard/CandidateStatusAction";
+import ExportCandidateCsv from "@/components/dashboard/ExportCandidateCsv";
 
-
-export default async function FormPageDetails({
-  params,
-}: {
-  params: { id: string };
+export default async function FormPageDetails({params, searchParams}: {
+  params: Promise<{ id: string }>;
+  searchParams: { score?: string; status?: string; order?: "asc" | "desc" };
 }) {
   const { id } = await params;
+  const { score, status, order } = await searchParams;
+
   const form = await getFormById(id);
 
-  if (!form) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle>Form Not Found</CardTitle>
-            <CardDescription>
-              The form you are looking for does not exist or could not be loaded.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-             <Button asChild>
-                <Link href="/dashboard">Return to Dashboard</Link>
-             </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  if (!form) {redirect("/dashboard");}
+
+  const minScore = score ? parseInt(score) : undefined;
+  const candidateStatus = status && status !== "all" ? status : undefined;
+
+
+  const filteredCandidates = await filterCandidate(id, minScore, candidateStatus, order);
 
   return (
     <div className="p-4 sm:p-6 md:p-8">
       <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            {form?.title}
-          </CardTitle>
-          <CardDescription>
-            Review all candidates who applied for this position.
-          </CardDescription>
+        <CardHeader className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-2xl font-bold tracking-tight">
+              {form?.title}
+            </CardTitle>
+            <CardDescription>
+              Review all candidates who applied for this position.
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <ExportCandidateCsv />
+            <CandidateFilterDialog />
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -55,38 +53,54 @@ export default async function FormPageDetails({
                 <TableHead>Email</TableHead>
                 <TableHead>Resume</TableHead>
                 <TableHead>Summary</TableHead>
+                <TableHead>AI analysis</TableHead>
                 <TableHead className="text-center">AI Score</TableHead>
-                <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {form?.candidates?.length > 0 ? (
-                form?.candidates?.map((candidate, index) => (
+              {filteredCandidates.length > 0 ? (
+                filteredCandidates.map((candidate, index) => (
                   <TableRow key={candidate.id}>
                     <TableCell className="font-medium">{index + 1}</TableCell>
-                    <TableCell className="font-medium">{candidate.name}</TableCell>
-                    <TableCell className="text-gray-600">{candidate.email}</TableCell>
+                    <TableCell>{candidate.name}</TableCell>
+                    <TableCell className="text-gray-600">
+                      {candidate.email}
+                    </TableCell>
                     <TableCell>
-                      <Button variant="outline" size="sm" className="cursor-pointer">
+                      <Button variant="outline" size="sm" asChild>
                         <a href={candidate.resumeUrl} target="_blank">
                           View Resume
                         </a>
                       </Button>
                     </TableCell>
                     <TableCell>
-                      {/* Menggunakan komponen Dialog di sini */}
                       <SummaryDialog summary={candidate.aiSummary} />
+                    </TableCell>
+                    <TableCell>
+                      <SummaryDialog summary={candidate.aiCriteriaAnalysis} />
                     </TableCell>
                     <TableCell className="text-center">
                       {candidate.aiScore !== null ? (
-                        <Badge>
-                          {candidate.aiScore}
-                        </Badge>
+                        <Badge>{candidate.aiScore}</Badge>
                       ) : (
                         <span className="text-gray-400">N/A</span>
                       )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {candidate.status === "shortlisted" && (
+                        <Badge className="bg-green-500 text-white">Shortlisted</Badge>
+                      )}
+                      {candidate.status === "rejected" && (
+                        <Badge className="bg-red-500 text-white">Rejected</Badge>
+                      )}
+                      {candidate.status === "pending" && (
+                        <Badge className="bg-yellow-500 text-white">Pending</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <CandidateStatusAction candidate={{ id: candidate.id, status: candidate.status }} />
                     </TableCell>
                   </TableRow>
                 ))

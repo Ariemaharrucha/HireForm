@@ -112,3 +112,17 @@ export async function getFormById(formId: string) {
 
   return form;
 }
+
+export async function getFormBySlug(slug: string) {
+  const form = await prisma.form.findUnique({
+    where: { slug },
+    select: { title: true, criteria: true },
+  });
+
+  if (!form) {
+    throw new Error("Form not found");
+  }
+
+  return form;
+}
+
