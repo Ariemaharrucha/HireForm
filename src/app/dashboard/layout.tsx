@@ -1,8 +1,7 @@
-import { Bell, Workflow } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Workflow } from "lucide-react"
 import { UserButton } from "@clerk/nextjs"
 import { getCurrentUser } from "@/lib/action/users"
-import Sidebar from "@/components/dashboard/sidebar"
+import Sidebar from "@/components/dashboard/Sidebar"
 
 
 interface DashboardLayoutProps {
@@ -29,10 +28,6 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
         </div>
 
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="w-4 h-4" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-          </Button>
           <UserButton />
         </div>
       </header>
