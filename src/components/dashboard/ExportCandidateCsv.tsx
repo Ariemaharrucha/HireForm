@@ -62,7 +62,7 @@ export default function ExportCandidateCsv() {
               </label>
             ))}
           </div>
-          <Button className="w-full" onClick={handleExport}>
+          <Button className="w-full cursor-pointer" onClick={handleExport}>
             Export
           </Button>
         </div>

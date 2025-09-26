@@ -2,6 +2,19 @@ import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import Papa from "papaparse"
 
+type CandidateExport = {
+  id: string
+  name: string
+  email: string
+  resumeUrl: string
+  aiScore: number | null
+  aiSummary: string | null
+  aiCriteriaAnalysis: string | null
+  status: string
+  createdAt: Date
+}
+
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -29,9 +42,9 @@ export async function POST(req: NextRequest) {
 
     // Map hanya field yang dipilih
     const filtered = candidates.map((c) => {
-      const row: Record<string, any> = {}
+      const row: Record<string, string | number | Date | null> = {}
       columns.forEach((col) => {
-        row[col] = (c as any)[col] ?? ""
+        row[col] = c[col as keyof CandidateExport] ?? ""
       })
       return row
     })

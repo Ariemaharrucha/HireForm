@@ -30,7 +30,7 @@ export function CandidateFilterDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">Filter</Button>
+        <Button variant="outline" size="sm" className="cursor-pointer">Filter</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -73,7 +73,7 @@ export function CandidateFilterDialog() {
               </SelectContent>
             </Select>
           </div>
-          <Button className="w-full" onClick={applyFilter}>
+          <Button className="w-full cursor-pointer" onClick={applyFilter}>
             Apply Filter
           </Button>
         </div>
