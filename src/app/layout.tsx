@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "ATS Mini SaaS",
+  title: "HireForm",
   description: "Recruitment form builder",
 };
 
