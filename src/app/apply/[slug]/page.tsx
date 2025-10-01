@@ -116,22 +116,25 @@ export default function ApplyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">HireForm</h1>
-          <p className="mt-2 text-lg font-semibold text-gray-800">{formDetail.title}</p>
-          <p className="mt-1 text-sm text-gray-600">{formDetail.criteria}</p>
+        <div className="text-center mb-8 space-y-4">
+          <h1 className="text-3xl font-bold text-gray-900">HireForm</h1>
+          <p className="mt-2 text-xl font-semibold text-gray-800">{formDetail.title}</p>
+          <div className="text-left">
+            <p className="text-md font-medium text-gray-700">Criteria:</p>
+            <p className="mt-1 text-sm text-gray-600">{formDetail.criteria}</p>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input id="name" name="name" type="text" value={formData.name} onChange={handleChange} placeholder="John Doe" required />
+            <Label htmlFor="name" className="block text-md font-medium text-gray-700">Full Name</Label>
+            <Input id="name" name="name" type="text" value={formData.name} className="h-12 text-md" onChange={handleChange} placeholder="John Doe" required />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="john@example.com" required />
+            <Label htmlFor="email" className="block text-md font-medium text-gray-700">Email Address</Label>
+            <Input id="email" name="email" type="email" value={formData.email} className="h-12 text-md" onChange={handleChange} placeholder="john@example.com" required />
           </div>
 
           <div className="space-y-2">
@@ -155,7 +158,7 @@ export default function ApplyPage() {
           </div>
 
           <div>
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full cursor-pointer bg-violet-500 hover:bg-violet-600 h-11 text-md" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

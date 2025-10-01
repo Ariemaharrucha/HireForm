@@ -14,8 +14,8 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())       // internal ID
-  clerkId   String   @unique                   // mapping ke Clerk
+  id        String   @id @default(cuid())      
+  clerkId   String   @unique                   
   email     String   @unique
   forms     Form[]
   createdAt DateTime @default(now())
@@ -37,6 +37,8 @@ model Form {
 
 model Candidate {
   id         String   @id @default(cuid())
+  form       Form     @relation(fields: [formId], references: [id])
+  formId     String
   name       String
   email      String
   resumeUrl  String
@@ -45,8 +47,6 @@ model Candidate {
   aiScore    Int?
   aiCriteriaAnalysis String?
   status     String   @default("processing")
-  formId     String
-  form       Form     @relation(fields: [formId], references: [id])
   createdAt  DateTime @default(now())
 }
 

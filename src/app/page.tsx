@@ -54,7 +54,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <Button className="text-lg px-8 py-6 bg-violet-600">
+                <Button className="text-lg px-8 py-6 bg-violet-600 cursor-pointer hover:bg-violet-700">
                   Get Started
                 </Button>
               </div>
